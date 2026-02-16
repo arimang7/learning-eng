@@ -1,6 +1,7 @@
 """English Vocab Master — Streamlit + Notion + Gemini 영어 단어 학습 앱"""
 import time
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 from streamlit_autorefresh import st_autorefresh
 
@@ -164,6 +165,15 @@ st.markdown(
 # ──────────────────────────────────────────────
 tab_register, tab_quiz = st.tabs(["📸 단어 등록", "📝 퀴즈"])
 
+# 퀴즈 진행 중이면 JS로 퀴즈 탭 자동 포커스
+if "quiz_state" in st.session_state:
+    components.html("""
+    <script>
+        const tabs = window.parent.document.querySelectorAll('[data-baseweb="tab"]');
+        if (tabs.length >= 2) { tabs[1].click(); }
+    </script>
+    """, height=0)
+
 
 # ========================================
 # 📸 단어 등록 탭
@@ -182,9 +192,26 @@ with tab_register:
         )
 
     with col_camera:
-        camera_input = st.camera_input("📷 카메라 촬영")
+        if "camera_active" not in st.session_state:
+            st.session_state["camera_active"] = False
 
-    image_source = camera_input if camera_input else uploaded_file
+        if not st.session_state["camera_active"]:
+            if st.button("📷 카메라 촬영", use_container_width=True):
+                st.session_state["camera_active"] = True
+                st.rerun()
+        else:
+            camera_input = st.camera_input("📷 카메라", key="camera")
+            if st.button("❌ 카메라 닫기", use_container_width=True):
+                st.session_state["camera_active"] = False
+                st.rerun()
+
+    image_source = None
+    if st.session_state.get("camera_active") and "camera" in st.session_state:
+        camera_input = st.session_state.get("camera")
+        if camera_input:
+            image_source = camera_input
+    if not image_source and uploaded_file:
+        image_source = uploaded_file
 
     if image_source:
         st.image(image_source, caption="업로드된 이미지", use_container_width=True)
@@ -241,6 +268,7 @@ with tab_quiz:
     if st.button("🔄 페이지 목록 새로고침", use_container_width=True):
         st.session_state.pop("quiz_pages", None)
         st.session_state.pop("quiz_state", None)
+        st.rerun()
 
     if "quiz_pages" not in st.session_state:
         with st.spinner("📥 Notion에서 페이지 목록을 불러오는 중..."):
@@ -364,16 +392,17 @@ with tab_quiz:
                             unsafe_allow_html=True,
                         )
 
-                    # 선택지
+                    # 선택지 (선택 시 자동 제출)
                     selected = st.radio(
                         "정답을 선택하세요:",
                         q["choices"],
+                        index=None,
                         key=f"quiz_q_{current}",
                         label_visibility="collapsed",
                     )
 
-                    # 제출 버튼
-                    if st.button("✅ 제출", key=f"submit_{current}", use_container_width=True):
+                    # 선택하면 자동 제출
+                    if selected is not None:
                         is_correct = selected == q["answer"]
 
                         if is_correct:

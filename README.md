@@ -73,7 +73,7 @@ NOTION_DATABASE_ID=your_notion_database_id_here
 | 변수                 | 설명                    | 발급 방법                                                                        |
 | -------------------- | ----------------------- | -------------------------------------------------------------------------------- |
 | `GEMINI_API_KEY`     | Google Gemini API 키    | [Google AI Studio](https://aistudio.google.com/)에서 발급                        |
-| `GEMINI_MODEL`       | 사용할 Gemini 모델명    | 기본값: `gemini-2.0-flash`                                                       |
+| `GEMINI_MODEL`       | 사용할 Gemini 모델명    | 기본값: `gemini-flash-latest`                                                    |
 | `NOTION_TOKEN`       | Notion Integration 토큰 | [Notion Developers](https://developers.notion.com/)에서 Integration 생성 후 발급 |
 | `NOTION_DATABASE_ID` | Notion 데이터베이스 ID  | Notion DB 페이지 URL에서 추출 (32자리 hex)                                       |
 
