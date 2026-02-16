@@ -4,3 +4,4 @@ notion-client==2.2.1
 pandas==2.2.3
 Pillow==11.1.0
 python-dotenv==1.0.1
+streamlit-autorefresh==1.0.1
